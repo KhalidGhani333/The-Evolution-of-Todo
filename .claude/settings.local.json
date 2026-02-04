@@ -1,0 +1,22 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python:*)",
+      "Bash(uvicorn:*)",
+      "Bash(curl -s http://localhost:8001/health)",
+      "Bash(curl:*)",
+      "Bash(pip install:*)",
+      "Bash(find . -name \"*.py\" -type f -exec grep -l \"api/tasks/\" {} ;)",
+      "Bash(find . -name \"*.py\" -type f -exec grep -l \"HTTPBearer\\\\|SecurityScopes\" {} ;)",
+      "Bash(find . -name \"*.py\" -type f -exec grep -l \"class TaskRead\\\\|TaskRead.*SQLModel\" {} ;)",
+      "Bash(wmic:*)",
+      "Bash(findstr uvicorn)",
+      "Bash(find:*)",
+      "Bash(uv sync)",
+      "Bash(netstat:*)",
+      "Bash(findstr:*)",
+      "Bash(findstr LISTENING)",
+      "Bash(dir /s /b)"
+    ]
+  }
+}
