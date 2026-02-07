@@ -14,13 +14,13 @@ export interface User {
 
 export interface Task {
   id: number;
-  userId: string;
+  user_id: string;  // Match backend snake_case
   title: string;
   description?: string;
   category?: string;
   completed: boolean;
-  createdAt: string;
-  updatedAt: string;
+  created_at: string;  // Match backend snake_case
+  updated_at: string;  // Match backend snake_case
 }
 
 export interface TaskCreate {

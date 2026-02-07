@@ -92,6 +92,11 @@ async function apiRequest<T>(
     throw new Error(error.error || error.detail || 'Request failed');
   }
 
+  // Handle 204 No Content (e.g., DELETE operations)
+  if (response.status === 204) {
+    return undefined as T;
+  }
+
   return response.json();
 }
 
@@ -122,3 +127,122 @@ export const api = {
   delete: <T>(endpoint: string) =>
     apiRequest<T>(endpoint, { method: 'DELETE' }),
 };
+
+/**
+ * Chat API functions
+ */
+import {
+  ChatRequest,
+  ChatResponse,
+  Conversation,
+  ConversationDetail,
+  ConversationListResponse,
+  CreateConversationRequest,
+  UpdateConversationRequest
+} from '@/types/chat';
+
+export async function sendChatMessage(
+  message: string,
+  conversationId?: string | null
+): Promise<ChatResponse> {
+  const request: ChatRequest = {
+    message,
+    conversation_id: conversationId
+  };
+
+  return api.post<ChatResponse>('/api/chat', request);
+}
+
+export async function listConversations(
+  status: string = 'active',
+  limit: number = 20,
+  offset: number = 0
+): Promise<ConversationListResponse> {
+  return api.get<ConversationListResponse>(
+    `/api/chat/conversations?status=${status}&limit=${limit}&offset=${offset}`
+  );
+}
+
+export async function getConversation(
+  conversationId: string,
+  limit: number = 50
+): Promise<ConversationDetail> {
+  return api.get<ConversationDetail>(
+    `/api/chat/conversations/${conversationId}?limit=${limit}`
+  );
+}
+
+export async function createConversation(
+  title?: string
+): Promise<Conversation> {
+  const request: CreateConversationRequest = { title };
+  return api.post<Conversation>('/api/chat/conversations', request);
+}
+
+export async function updateConversation(
+  conversationId: string,
+  updates: UpdateConversationRequest
+): Promise<Conversation> {
+  return api.patch<Conversation>(
+    `/api/chat/conversations/${conversationId}`,
+    updates
+  );
+}
+
+export async function deleteConversation(
+  conversationId: string
+): Promise<void> {
+  return api.delete<void>(`/api/chat/conversations/${conversationId}`);
+}
+
+/**
+ * Task API functions
+ */
+export interface Task {
+  id: number;
+  user_id: string;
+  title: string;
+  description?: string;
+  category?: string;
+  completed: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface TasksResponse {
+  tasks: Task[];
+  total: number;
+}
+
+export interface CreateTaskRequest {
+  title: string;
+  description?: string;
+  category?: string;
+}
+
+export interface UpdateTaskRequest {
+  title?: string;
+  description?: string;
+  category?: string;
+  completed?: boolean;
+}
+
+export async function getTasks(): Promise<TasksResponse> {
+  return api.get<TasksResponse>('/api/tasks');
+}
+
+export async function createTask(data: CreateTaskRequest): Promise<Task> {
+  return api.post<Task>('/api/tasks', data);
+}
+
+export async function updateTask(taskId: number, data: UpdateTaskRequest): Promise<Task> {
+  return api.patch<Task>(`/api/tasks/${taskId}`, data);
+}
+
+export async function deleteTask(taskId: number): Promise<void> {
+  return api.delete<void>(`/api/tasks/${taskId}`);
+}
+
+export async function completeTask(taskId: number): Promise<Task> {
+  return api.post<Task>(`/api/tasks/${taskId}/complete`, {});
+}

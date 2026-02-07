@@ -16,7 +16,9 @@
       "Bash(netstat:*)",
       "Bash(findstr:*)",
       "Bash(findstr LISTENING)",
-      "Bash(dir /s /b)"
+      "Bash(dir /s /b)",
+      "Bash(pwsh -Command:*)",
+      "mcp__context7__query-docs"
     ]
   }
 }

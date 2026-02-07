@@ -9,7 +9,7 @@ import { Task } from "@/types";
 import AddTaskForm from "@/components/tasks/AddTaskForm";
 import TaskList from "@/components/tasks/TaskList";
 import EditTaskModal from "@/components/tasks/EditTaskModal";
-import { signOut } from "@/lib/api";
+import { signOut, getTasks, updateTask, deleteTask } from "@/lib/api";
 import { useAuth } from "@/lib/auth-context";
 
 export default function TasksPage() {
@@ -25,15 +25,7 @@ export default function TasksPage() {
 
     try {
       setIsLoading(true);
-      const token = localStorage.getItem('auth_token');
-      const response = await fetch(`/api/${user.id}/tasks`, {
-        headers: {
-          "Authorization": `Bearer ${token}`
-        }
-      });
-      if (!response.ok) throw new Error("Failed to fetch tasks");
-
-      const data = await response.json();
+      const data = await getTasks();
       setTasks(data.tasks);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load tasks");
@@ -52,17 +44,8 @@ export default function TasksPage() {
     if (!user) return;
 
     try {
-      const token = localStorage.getItem('auth_token');
-      const response = await fetch(`/api/${user.id}/tasks/${taskId}/complete`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`
-        },
-        body: JSON.stringify({ completed }),
-      });
-
-      if (!response.ok) throw new Error("Failed to update task");
+      // Use API function which handles authentication automatically
+      await updateTask(taskId, { completed });
 
       // Optimistic update
       setTasks(tasks.map(task =>
@@ -78,15 +61,8 @@ export default function TasksPage() {
     if (!confirm("Are you sure you want to delete this task?")) return;
 
     try {
-      const token = localStorage.getItem('auth_token');
-      const response = await fetch(`/api/${user.id}/tasks/${taskId}`, {
-        method: "DELETE",
-        headers: {
-          "Authorization": `Bearer ${token}`
-        }
-      });
-
-      if (!response.ok) throw new Error("Failed to delete task");
+      // Use API function which handles authentication automatically
+      await deleteTask(taskId);
 
       // Remove from list
       setTasks(tasks.filter(task => task.id !== taskId));
@@ -104,19 +80,11 @@ export default function TasksPage() {
     if (!user) return;
 
     try {
-      const token = localStorage.getItem('auth_token');
-      const response = await fetch(`/api/${user.id}/tasks/${taskId}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`
-        },
-        body: JSON.stringify(data),
+      // Use API function which handles authentication automatically
+      const updatedTask = await updateTask(taskId, {
+        title: data.title,
+        description: data.description
       });
-
-      if (!response.ok) throw new Error("Failed to update task");
-
-      const updatedTask = await response.json();
 
       // Update task in list
       setTasks(tasks.map(task =>
@@ -187,6 +155,15 @@ export default function TasksPage() {
                   <span className="text-green-700 font-medium">{completedCount} Done</span>
                 </div>
               </div>
+              <a
+                href="/chat"
+                className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg hover:from-purple-700 hover:to-blue-700 transition-all duration-200 font-medium shadow-md hover:shadow-lg"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+                </svg>
+                <span className="hidden sm:inline">AI Chat</span>
+              </a>
               <button
                 onClick={signOut}
                 className="flex items-center space-x-2 px-4 py-2 text-gray-700 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-all duration-200 font-medium"

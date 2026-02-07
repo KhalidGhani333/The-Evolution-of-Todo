@@ -161,6 +161,8 @@ class TaskService:
             task.description = task_data.description
         if task_data.category is not None:
             task.category = task_data.category
+        if task_data.completed is not None:
+            task.completed = task_data.completed
 
         task.updated_at = datetime.utcnow()
 

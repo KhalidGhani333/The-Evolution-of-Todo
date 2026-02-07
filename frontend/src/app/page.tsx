@@ -5,7 +5,6 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { getCurrentUser } from "@/lib/auth-context";
 
 export default function HomePage() {
   const router = useRouter();
@@ -15,10 +14,26 @@ export default function HomePage() {
     const token = typeof window !== 'undefined' ? localStorage.getItem('auth_token') : null;
 
     if (token) {
-      // User is authenticated, redirect to tasks
-      router.replace("/tasks");
+      // Verify token is valid by checking if it's not expired
+      try {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        const isExpired = payload.exp * 1000 < Date.now();
+
+        if (isExpired) {
+          // Token expired, clear and go to signin
+          localStorage.removeItem('auth_token');
+          router.replace("/signin");
+        } else {
+          // Valid token, go to tasks
+          router.replace("/tasks");
+        }
+      } catch (error) {
+        // Invalid token format, clear and go to signin
+        localStorage.removeItem('auth_token');
+        router.replace("/signin");
+      }
     } else {
-      // User is not authenticated, redirect to signin
+      // No token, go to signin
       router.replace("/signin");
     }
   }, [router]);

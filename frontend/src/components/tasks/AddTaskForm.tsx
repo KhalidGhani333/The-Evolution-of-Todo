@@ -8,6 +8,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useState } from "react";
+import { createTask } from "@/lib/api";
 
 const taskSchema = z.object({
   title: z.string().min(1, "Title is required").max(200, "Title must be 200 characters or less"),
@@ -42,20 +43,12 @@ export default function AddTaskForm({ onTaskAdded, userId }: AddTaskFormProps) {
     setSuccess(false);
 
     try {
-      const token = localStorage.getItem('auth_token');
-      const response = await fetch(`/api/${userId}/tasks`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`
-        },
-        body: JSON.stringify(data),
+      // Use API function which handles authentication automatically
+      await createTask({
+        title: data.title,
+        description: data.description,
+        category: data.category
       });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || errorData.detail || "Failed to create task");
-      }
 
       reset();
       setSuccess(true);
